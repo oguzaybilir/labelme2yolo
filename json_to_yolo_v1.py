@@ -2,12 +2,8 @@ import os
 from glob import glob
 import json
 import shutil
-import cv2
 import argparse 
 import sys
-import math
-from collections import OrderedDict
-from labelme import utils
 
 class JsonToYolo(object):
     def __init__(self, path, target, task):
@@ -152,13 +148,43 @@ class JsonToYolo(object):
     def _get_label_from_mapping(self, encoded_label):
         # Use the class attribute for label mapping
         return {v: k for k, v in self.label_mapping.items()}.get(encoded_label, "unknown")  # Default to "unknown" if label not found
+    
+    def _is_bbox_or_polygon(self, label):
+        data = list(map(float, label.split()))
+        class_id = data[0]
+        values = data[1:]
+        
+        
+        if len(values) == 4:
+            return "Detection (BBox)"
+        
+        elif len(values) > 4:
+            return "Segmentation (Polygon)"
+        
+        elif len(values) >= 6:
+            return "Segmentation (Polygon)"
 
+        return None
+    
 # Example usage
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=str, help="path to the directory", required=True)
-    parser.add_argument("--target", type=str, help="path to the directory", required=True)
-    parser.add_argument("--task", type=str, help="detection or segmentation ?", required=True)
+    parser.add_argument("--path",
+                        type=str,
+                        help="path to the directory",
+                        required=True)
+    
+    parser.add_argument("--target",
+                        type=str,
+                        help="path to the directory",
+                        required=True)
+    
+    parser.add_argument("--task",
+                        type=str,
+                        choices=["segmentation", "detection"],
+                        help="detection or segmentation ?",
+                        required=True)
+    
     args = parser.parse_args(sys.argv[1:])
     json_to_yolo = JsonToYolo(args.path, args.target, args.task)
     files = json_to_yolo._read_tiff_and_json_files()
