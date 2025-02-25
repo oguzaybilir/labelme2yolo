@@ -1,4 +1,0 @@
-benign
-DCIS
-kalsifikasyon
-malign
