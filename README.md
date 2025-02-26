@@ -9,7 +9,7 @@ This project is designed to convert **LabelMe JSON annotations** into **YOLO bou
 - **Simplifies Workflow**: Avoid the hassle of manually converting annotations.
 
 ## Installation
-To install and set up this repository, follow these steps:
+To install this repository, follow these steps:
 
 ```bash
 # Clone the repository
@@ -17,9 +17,6 @@ git clone https://github.com/oguzaybilir/labelme2yolo.git
 
 # Navigate to the repository directory
 cd labelme2yolo
-
-# Install dependencies
-pip3 install -r requirements.txt
 ```
 
 ## Usage
