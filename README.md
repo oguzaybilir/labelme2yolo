@@ -65,13 +65,13 @@ After running the script, your target directory will contain YOLO-formatted labe
 ```txt
 0 0.39 0.46 0.58 0.47
 ```
+### Corresponding YOLO Output (Polygon Segmentation)
+```txt
+0 50 60 200 60 200 300 50 300
+```
 
 ## Contact
 For any inquiries, feel free to reach out via:
-- GitHub: [your GitHub profile](https://github.com/oguzaybilir)
-- LinkedIn: [your LinkedIn profile](https://linkedin.com/in/oguzaybilir)
-- Email: [your email address](mailto:oguzaybilir@gmail.com)
-
----
-
-This README should now better communicate your project's purpose and usage while keeping your original writing style intact. 🚀
+- GitHub: [Github](https://github.com/oguzaybilir)
+- LinkedIn: [LinkedIn](https://linkedin.com/in/oguzaybilir)
+- Email: [E-Mail](mailto:oguzaybilir@gmail.com)
