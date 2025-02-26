@@ -28,12 +28,12 @@ The script requires three command-line arguments:
 ### Example Commands
 #### Convert LabelMe JSON to YOLO Bounding Boxes
 ```bash
-python3 labelme2yolo.py --path /path/to/source/directory --target /path/to/target/directory --task "detection"
+python3 labelme2yolo.py --path "/path/to/source/directory" --target "/path/to/target/directory" --task "detection"
 ```
 
 #### Convert LabelMe JSON to YOLO Polygon Segmentation
 ```bash
-python3 labelme2yolo.py --path /path/to/source/directory --target /path/to/target/directory --task "segmentation"
+python3 labelme2yolo.py --path "/path/to/source/directory" --target "/path/to/target/directory" --task "segmentation"
 ```
 
 ### Expected Output
