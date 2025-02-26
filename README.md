@@ -4,11 +4,6 @@
 This project is designed to convert labelme JSON label's to YOLO bounding box and polygon format.
 It provides the ability to convert JSON label's to YOLO format with ease and accuracy.
 
-## Features
-- Feature 1: [Brief description]
-- Feature 2: [Brief description]
-- Feature 3: [Brief description]
-
 ## Installation
 To install and set up the project, follow these steps:
 ```bash
