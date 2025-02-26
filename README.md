@@ -71,8 +71,6 @@ After running the script, your target directory will contain YOLO-formatted labe
 ```
 
 ## To-Do List
-- Improve error handling
-- Optimize conversion speed
 - **Correct error txt generation for logging issues**
 
 ## Contact
