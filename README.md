@@ -71,7 +71,7 @@ After running the script, your target directory will contain YOLO-formatted labe
 ```
 
 ## To-Do List
-- **Correct error txt generation for logging issues**
+- **Correct label_errors.txt generation for logging issues**
 
 ## Contact
 For any inquiries, feel free to reach out via:
