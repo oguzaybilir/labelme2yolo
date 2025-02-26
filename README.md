@@ -70,6 +70,11 @@ After running the script, your target directory will contain YOLO-formatted labe
 0 50 60 200 60 200 300 50 300
 ```
 
+## To-Do List
+- Improve error handling
+- Optimize conversion speed
+- **Correct error txt generation for logging issues**
+
 ## Contact
 For any inquiries, feel free to reach out via:
 - GitHub: [Github](https://github.com/oguzaybilir)
