@@ -20,14 +20,14 @@ class JsonToYolo:
         self.path = path 
         self.target = os.path.join(target, task)
         self.task = task
-        self.error_log_path = os.path.join(target, "etiket_hatalari.txt")
+        self.error_log_path = os.path.join(target, "label_errors.txt")
         
         # Define label mapping as a class attribute
         self.label_mapping = {
-            'benign': 0,
-            'DCIS': 1,
-            'kalsifikasyon': 2,
-            'malign': 3
+            'label1': 0,
+            'label2': 1,
+            'label3': 2,
+            'label4': 3
         }
         
         # Create target directory if it doesn't exist
