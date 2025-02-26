@@ -1,67 +1,67 @@
-# JSON to YOLO Converter
+# Project Title
 
-Bu proje, LabelMe tarafından oluşturulan JSON formatındaki anotasyonları YOLO formatına dönüştürmek için geliştirilmiştir. Model eğitimi için anotasyonları hızla ve kolayca dönüştürmek isteyen araştırmacılar ve mühendisler için kullanışlı bir araçtır.
+## Description
+This project is designed to convert labelme JSON label's to YOLO bounding box and polygon format.
+It provides the ability to convert JSON label's to YOLO format with ease and accuracy.
 
-## Özellikler
-- **Detection ve Segmentation Desteği**: Nesne tespiti (detection) veya segmentasyon için anotasyonları dönüştürebilirsiniz.
-- **Otomatik Klasör Yönetimi**: Dönüştürülen veriler belirtilen hedef klasöre kaydedilir.
-- **Etiket Haritalama**: JSON'daki etiketleri otomatik olarak YOLO formatına dönüştürür.
+## Features
+- Feature 1: [Brief description]
+- Feature 2: [Brief description]
+- Feature 3: [Brief description]
 
-## Gereksinimler
-Bu proje aşağıdaki kütüphaneleri gerektirir:
+## Installation
+To install and set up the project, follow these steps:
+```bash
+# Clone the repository
+git clone https://github.com/oguzaybilir/labelme2yolo.git
+
+# Navigate to the project directory
+cd labelme2yolo
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Usage
+
+#### Arguments
+
+The script runs with specific arguments:
+
+- `--path` : Specifies the source directory containing JSON files.
+- `--target` : Specifies the target directory where the converted YOLO format files will be saved.
+- `--task` : Selects the type of processing. Use `"detection"` for object detection (bounding box) or `"segmentation"` for segmentation (mask).
+
+**For Object Detection (Detection):**  
+Run the following command to convert JSON annotations to YOLO format:
 
 ```bash
-pip install opencv-python argparse labelme
+python json_to_yolo_v1.py --path "path/to/source/directory" --target "path/to/target/directory" --task "detection"
 ```
 
-## Kurulum
-1. **Projeyi Klonlayın:**
-
-   ```bash
-   git clone https://github.com/kullanici_adi/json-to-yolo.git
-   cd json-to-yolo
-   ```
-
-2. **Bağımlılıkları Yükleyin:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Kullanım
-Komut satırından aşağıdaki gibi çalıştırabilirsiniz:
+**For Segmentation:**  
+To convert segmentation data into YOLO format, use the following command:
 
 ```bash
-python json-to-yolo-v1.py --path "veri_klasoru" --target "cikis_klasoru" --task "detection"
+python json_to_yolo_v1.py --path "path/to/source/directory" --target "path/to/target/directory" --task "segmentation"
 ```
 
-### Parametreler
-- `--path`: JSON ve TIFF dosyalarının bulunduğu kaynak klasör.
-- `--target`: Dönüştürülmüş YOLO formatındaki verilerin kaydedileceği hedef klasör.
-- `--task`: `detection` veya `segmentation` seçeneklerinden biri (nesne tespiti veya segmentasyon için).
-
-## Örnek Kullanım
-Örnek bir çalıştırma senaryosu:
-
-```bash
-python json-to-yolo-v1.py --path "./dataset" --target "./yolo_dataset" --task "detection"
-```
-
-Bu komut, `./dataset` içinde bulunan JSON anotasyonlarını YOLO formatına çevirir ve `./yolo_dataset` klasörüne kaydeder.
-
-## Çıktı Formatı
-Dönüştürülen YOLO formatındaki `txt` dosyaları şu formatta olur:
-
-```
-[class_id] [x_center] [y_center] [width] [height]
-```
-
-Her satır bir nesneyi temsil eder ve koordinatlar 0-1 arasında normalize edilir.
-
-## Katkıda Bulunma
-Projeye katkıda bulunmak isterseniz, lütfen bir **pull request** gönderin veya bir **issue** açın!
-
-## Lisans
-MIT Lisansı altında yayınlanmıştır.
+This will convert the JSON files from the specified source directory into the appropriate YOLO format and save them in the target directory.
 
 
+## Configuration
+If there are any configuration settings, describe them here, such as environment variables, configuration files, or API keys.
+
+## Contributing
+Contributions are welcome! To contribute:
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes and commit them (`git commit -m "Add new feature"`).
+4. Push the changes (`git push origin feature-branch`).
+5. Open a pull request.
+
+## License
+This project is licensed under the [License Name] - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+For any inquiries, feel free to reach out to [your contact information].
