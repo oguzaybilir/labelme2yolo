@@ -24,10 +24,8 @@ class JsonToYolo:
         
         # Define label mapping as a class attribute
         self.label_mapping = {
-            'label1': 0,
-            'label2': 1,
-            'label3': 2,
-            'label4': 3
+            'Airplane': 0,
+            'Truncated_airplane': 1
         }
         
         # Create target directory if it doesn't exist
@@ -55,29 +53,60 @@ class JsonToYolo:
 
     def _read_tiff_and_json_files(self) -> List[Tuple[str, str]]:
         """
-        Reads all TIFF and corresponding JSON files in the specified directory.
+        Reads all image and corresponding JSON files in the specified directory.
         
         Returns:
-            list: A list of tuples, each containing the path to a TIFF file and its corresponding JSON file.
+            list: A list of tuples, each containing the path to an image file and its corresponding JSON file.
         """
-        tiff_files = sorted(glob(os.path.join(self.path, '*/*.tiff'), recursive=True))
-        json_files = sorted(glob(os.path.join(self.path, '*/*.json'), recursive=True))
+        import json
+        
+        json_files = []
+        # Check both the directory itself and one level deep
+        json_files.extend(glob(os.path.join(self.path, '*.json')))
+        json_files.extend(glob(os.path.join(self.path, '*/*.json')))
+        json_files = sorted(list(set(json_files)))
 
-        if len(tiff_files) != len(json_files):
-            print(f"UYARI: TIFF ({len(tiff_files)}) ve JSON ({len(json_files)}) dosya sayıları eşleşmiyor!")
-            self._log_error(None, f"TIFF ({len(tiff_files)}) ve JSON ({len(json_files)}) dosya sayıları eşleşmiyor!")
+        if len(json_files) == 0:
+            print(f"[WARNING]: No JSON files found in {self.path}")
         
         file_pairs = []
-        for tiff, json_path in zip(tiff_files, json_files):
-            tiff_base = os.path.splitext(os.path.basename(tiff))[0]
+        valid_exts = ['.jpg', '.jpeg', '.png', '.tiff', '.tif']
+        
+        for json_path in json_files:
+            json_dir = os.path.dirname(json_path)
             json_base = os.path.splitext(os.path.basename(json_path))[0]
             
-            # Check if the file names match with json's names
-            if tiff_base != json_base:
-                print(f"[WARNING]: File names do not match: {tiff} and {json_path}")
-                self._log_error(None, f"File names do not match: {tiff} and {json_path}")
+            img_path = None
             
-            file_pairs.append((tiff, json_path))
+            # Try to read imagePath from JSON
+            try:
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                img_rel = data.get('imagePath', '')
+                if img_rel:
+                    candidate = os.path.join(json_dir, img_rel)
+                    if os.path.exists(candidate):
+                        img_path = candidate
+            except Exception:
+                pass
+            
+            # Fallback: check common extensions in the same directory
+            if not img_path:
+                for ext in valid_exts:
+                    for e in [ext, ext.upper()]:
+                        candidate = os.path.join(json_dir, json_base + e)
+                        if os.path.exists(candidate):
+                            img_path = candidate
+                            break
+                    if img_path:
+                        break
+            
+            if img_path:
+                file_pairs.append((img_path, json_path))
+            else:
+                print(f"[WARNING]: Corresponding image not found for JSON: {json_path}")
+                self._log_error(None, f"Corresponding image not found for JSON: {json_path}")
+                
         return file_pairs
     
     def _convert_json_to_yolo_detection_format(self, pairs: List[Tuple[str, str]]) -> None:
