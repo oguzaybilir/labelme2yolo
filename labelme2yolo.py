@@ -6,6 +6,7 @@ import argparse
 import sys
 import datetime
 from typing import List, Tuple, Dict, Optional, Union
+from PIL import Image
 
 class JsonToYolo:
     def __init__(self, path: str, target: str, task: str):
@@ -24,8 +25,10 @@ class JsonToYolo:
         
         # Define label mapping as a class attribute
         self.label_mapping = {
-            'Airplane': 0,
-            'Truncated_airplane': 1
+            'radome': 0,
+            'radar_area': 1,
+            'sector_scan': 2,
+            'other': 3
         }
         
         # Create target directory if it doesn't exist
@@ -464,6 +467,175 @@ class JsonToYolo:
         
         return self.stats
 
+class YoloToJson:
+    def __init__(self, path: str, target: str):
+        """
+        The constructor of the YoloToJson Class.
+        """
+        self.path = path 
+        self.target = os.path.join(target, "json")
+        self.error_log_path = os.path.join(self.target, "yolo2json_errors.txt")
+        
+        # Define label mapping as a class attribute (reverse of JsonToYolo)
+        self.label_mapping = {
+            0: 'radome',
+            1: 'radar_area',
+            2: 'sector_scan',
+            3: 'other'
+        }
+        
+        # Create target directory if it doesn't exist
+        os.makedirs(self.target, exist_ok=True) 
+        
+        # Define statistics as a class attribute
+        self.stats = {
+            "processed_files": 0,
+            "successful_files": 0,
+            "error_files": 0,
+            "processed_labels": 0,
+            "invalid_labels": 0
+        }
+
+    def _log_error(self, filename: Optional[str], error_message: str) -> None:
+        with open(self.error_log_path, "a", encoding="utf-8") as f:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            file_info = f"File: {filename}" if filename else "Unknown file"
+            f.write(f"[{timestamp}] {file_info} - {error_message}\n")
+
+    def _read_image_and_txt_files(self) -> List[Tuple[str, str]]:
+        txt_files = []
+        txt_files.extend(glob(os.path.join(self.path, '*.txt')))
+        txt_files.extend(glob(os.path.join(self.path, '*/*.txt')))
+        txt_files = sorted(list(set(txt_files)))
+        
+        # exclude classes.txt
+        txt_files = [f for f in txt_files if not f.endswith('classes.txt')]
+
+        if len(txt_files) == 0:
+            print(f"[WARNING]: No TXT files found in {self.path}")
+        
+        file_pairs = []
+        valid_exts = ['.jpg', '.jpeg', '.png', '.tiff', '.tif']
+        
+        for txt_path in txt_files:
+            txt_dir = os.path.dirname(txt_path)
+            txt_base = os.path.splitext(os.path.basename(txt_path))[0]
+            
+            img_path = None
+            for ext in valid_exts:
+                for e in [ext, ext.upper()]:
+                    candidate = os.path.join(txt_dir, txt_base + e)
+                    if os.path.exists(candidate):
+                        img_path = candidate
+                        break
+                if img_path:
+                    break
+            
+            if img_path:
+                file_pairs.append((img_path, txt_path))
+            else:
+                print(f"[WARNING]: Corresponding image not found for TXT: {txt_path}")
+                self._log_error(None, f"Corresponding image not found for TXT: {txt_path}")
+                
+        return file_pairs
+
+    def process(self) -> Dict[str, int]:
+        print(f"[Started at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
+        print("YOLO files converted to LabelMe JSON format...")
+        pairs = self._read_image_and_txt_files()
+        
+        for img_path, txt_path in pairs:
+            self.stats["processed_files"] += 1
+            print(f"Processing: {txt_path}")
+            
+            try:
+                with Image.open(img_path) as img:
+                    image_width, image_height = img.size
+                
+                with open(txt_path, 'r') as f:
+                    lines = f.readlines()
+                
+                shapes = []
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    self.stats["processed_labels"] += 1
+                    parts = line.split()
+                    class_id = int(parts[0])
+                    label_name = self.label_mapping.get(class_id, f"class_{class_id}")
+                    
+                    coords = [float(p) for p in parts[1:]]
+                    
+                    if len(coords) == 4:
+                        # Detection (BBox) format: x_center, y_center, w, h
+                        x_center, y_center, w, h = coords
+                        x1 = (x_center - w / 2) * image_width
+                        y1 = (y_center - h / 2) * image_height
+                        x2 = (x_center + w / 2) * image_width
+                        y2 = (y_center + h / 2) * image_height
+                        points = [[x1, y1], [x2, y2]]
+                        shape_type = "rectangle"
+                    elif len(coords) >= 6 and len(coords) % 2 == 0:
+                        # Segmentation (Polygon) format: x1, y1, x2, y2, ...
+                        points = []
+                        for i in range(0, len(coords), 2):
+                            x = coords[i] * image_width
+                            y = coords[i+1] * image_height
+                            points.append([x, y])
+                        shape_type = "polygon"
+                    else:
+                        self._log_error(txt_path, f"Invalid coordinates count: {len(coords)}")
+                        self.stats["invalid_labels"] += 1
+                        continue
+                    
+                    shapes.append({
+                        "label": label_name,
+                        "points": points,
+                        "group_id": None,
+                        "shape_type": shape_type,
+                        "flags": {}
+                    })
+                
+                json_data = {
+                    "version": "5.2.1",
+                    "flags": {},
+                    "shapes": shapes,
+                    "imagePath": os.path.basename(img_path),
+                    "imageData": None,
+                    "imageHeight": image_height,
+                    "imageWidth": image_width
+                }
+                
+                json_file = os.path.join(self.target, os.path.basename(txt_path).replace('.txt', '.json'))
+                with open(json_file, 'w') as f:
+                    json.dump(json_data, f, indent=2)
+                
+                print(f"Created: {json_file}")
+                
+                # Copy image file to target
+                target_img_path = os.path.join(self.target, os.path.basename(img_path))
+                if img_path != target_img_path:
+                    shutil.copy(img_path, target_img_path)
+                
+                self.stats["successful_files"] += 1
+                
+            except Exception as e:
+                error_msg = f"File processing error: {str(e)}"
+                print(f"[ERROR]: {error_msg}")
+                self._log_error(txt_path, error_msg)
+                self.stats["error_files"] += 1
+
+        print("\nConversion Complete!")
+        print(f"Number of processed files: {self.stats['processed_files']}")
+        print(f"Number of successful files: {self.stats['successful_files']}")
+        print(f"Number of error files: {self.stats['error_files']}")
+        print(f"Number of processed labels: {self.stats['processed_labels']}")
+        print(f"Number of invalid labels: {self.stats['invalid_labels']}")  
+        print(f"Detailed error report: {self.error_log_path}")
+        return self.stats
+
 def main():
     parser = argparse.ArgumentParser(description="Converts JSON label files to the specified task format")
     parser.add_argument("--path",
@@ -479,14 +651,25 @@ def main():
     parser.add_argument("--task",
                         type=str,
                         choices=["segmentation", "detection"],
-                        help="The task type: detection or segmentation.",
-                        required=True)
+                        help="The task type: detection or segmentation (required for json2yolo).")
+    
+    parser.add_argument("--mode",
+                        type=str,
+                        choices=["json2yolo", "yolo2json"],
+                        default="json2yolo",
+                        help="Conversion mode: json2yolo or yolo2json.")
     
     args = parser.parse_args()
     
     try:
-        json_to_yolo = JsonToYolo(args.path, args.target, args.task)
-        json_to_yolo.process()
+        if args.mode == "json2yolo":
+            if not args.task:
+                parser.error("--task is required when mode is json2yolo")
+            json_to_yolo = JsonToYolo(args.path, args.target, args.task)
+            json_to_yolo.process()
+        elif args.mode == "yolo2json":
+            yolo_to_json = YoloToJson(args.path, args.target)
+            yolo_to_json.process()
     except Exception as e:
         print(f"Error: An unexpected error occurred during the process: {str(e)}")
         return 1

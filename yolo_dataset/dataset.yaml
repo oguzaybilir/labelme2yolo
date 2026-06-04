@@ -1,0 +1,11 @@
+path: /home/agrovech/agrovech-codes/radar-segmentation/labelme2yolo/yolo_dataset # dataset root dir
+train: images/train
+val: images/val
+test: images/test
+
+# Classes
+names:
+  0: radome
+  1: radar_area
+  2: sector_scan
+  3: other
